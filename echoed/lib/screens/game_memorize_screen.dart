@@ -101,20 +101,23 @@ class _GameMemorizeScreenState extends ConsumerState<GameMemorizeScreen>
       _playedIndices.add(index);
     });
 
-    await ref.read(gameNotifierProvider.notifier).playTone(index);
-
-    await Future<void>.delayed(
-      Duration(
-          milliseconds:
-              (AppConstants.toneDurationSeconds * 1000).round() + 150),
-    );
-
-    if (mounted) {
-      setState(() => _activeIndex = null);
-      // Trigger ready glow when all tones heard
-      if (_playedIndices.length == _frequencies.length) {
-        HapticFeedback.heavyImpact();
-        _readyCtrl.repeat(reverse: true);
+    try {
+      await ref.read(gameNotifierProvider.notifier).playTone(index);
+      await Future<void>.delayed(
+        Duration(
+            milliseconds:
+                (AppConstants.toneDurationSeconds * 1000).round() + 150),
+      );
+    } catch (_) {
+      // Audio failure — still unblock the UI below.
+    } finally {
+      if (mounted) {
+        setState(() => _activeIndex = null);
+        // Trigger ready glow when all tones heard
+        if (_playedIndices.length == _frequencies.length) {
+          HapticFeedback.heavyImpact();
+          _readyCtrl.repeat(reverse: true);
+        }
       }
     }
   }
@@ -221,7 +224,7 @@ class _GameMemorizeScreenState extends ConsumerState<GameMemorizeScreen>
                             hasPlayed: _playedIndices.contains(i),
                             isDisabled: _activeIndex != null && _activeIndex != i,
                             pulseCtrl: _pulseCtrl,
-                            showHz: !isHard,
+                            showHz: false,
                             onTap: (_activeIndex != null && _activeIndex != i)
                                 ? null
                                 : () => _playTone(i),

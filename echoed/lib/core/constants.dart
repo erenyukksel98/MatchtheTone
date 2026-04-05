@@ -17,7 +17,7 @@ class AppConstants {
   static const int toneCount = 5;
   static const double minFrequencyHz = 200.0;
   static const double maxFrequencyHz = 1800.0;
-  static const int memorizeTimeLimitSeconds = 300;
+  static const int memorizeTimeLimitSeconds = 120;
   static const double toneDurationSeconds = 1.5;
   static const double toneFadeSeconds = 0.01;
   static const double toneAmplitude = 0.7;

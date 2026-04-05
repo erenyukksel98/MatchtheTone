@@ -1,48 +1,61 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:typed_data';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:path_provider/path_provider.dart';
+
 import 'tone_generator.dart';
 import '../core/constants.dart';
+
+// Platform-specific audio source factory.
+// On web:    audio_platform_web.dart  (data URI, no dart:io)
+// On native: audio_platform_io.dart   (temp file via dart:io + path_provider)
+import 'audio_platform_io.dart'
+    if (dart.library.html) 'audio_platform_web.dart';
 
 /// ---------------------------------------------------------------------------
 /// AudioService — manages playback of procedurally generated sine-wave tones.
 ///
-/// Tones are synthesized in memory, written to temp PCM files, and played
-/// via just_audio. No external audio files or internet audio are used.
+/// Tones are synthesized in-memory as WAV bytes.
+///
+/// • Native (iOS / Android / desktop): bytes are written to a temp file and
+///   played via AudioSource.file.
+/// • Web: bytes are streamed as a data URI via AudioSource.uri — no filesystem
+///   access required.
 /// ---------------------------------------------------------------------------
 class AudioService {
   AudioService();
 
   final AudioPlayer _player = AudioPlayer();
 
-  /// Cache: seed+index+hardMode -> temp file path
-  final Map<String, String> _toneFileCache = {};
+  /// In-memory WAV bytes cache: cacheKey -> WAV Uint8List.
+  final Map<String, Uint8List> _wavCache = {};
+
+  /// Native-only: cacheKey -> temp file path (populated by buildAudioSource).
+  final Map<String, String> _fileCache = {};
 
   bool _isDisposed = false;
 
-  /// Pre-generate and cache all tone files for a game session.
-  /// Call this during the loading phase before the game begins.
+  // ── Public API ─────────────────────────────────────────────────────────────
+
+  /// Pre-generate all tone WAV data for a game session.
   Future<void> preloadTones({
     required List<double> frequencies,
     required int seed,
     bool hardMode = false,
   }) async {
-    final futures = <Future<void>>[];
-    for (int i = 0; i < frequencies.length; i++) {
-      futures.add(_ensureToneFile(
-        seed: seed,
-        toneIndex: i,
-        frequencyHz: frequencies[i],
-        hardMode: hardMode,
-      ));
-    }
-    await Future.wait(futures);
+    await Future.wait([
+      for (int i = 0; i < frequencies.length; i++)
+        _ensureWav(
+          seed: seed,
+          toneIndex: i,
+          frequencyHz: frequencies[i],
+          hardMode: hardMode,
+        ),
+    ]);
   }
 
-  /// Play tone at [index] in the list. Stops any currently playing tone.
+  /// Play the tone at [index]. Stops any currently playing tone first.
   Future<void> playTone({
     required List<double> frequencies,
     required int index,
@@ -50,10 +63,9 @@ class AudioService {
     bool hardMode = false,
   }) async {
     if (_isDisposed) return;
-
     await _player.stop();
 
-    await _ensureToneFile(
+    await _ensureWav(
       seed: seed,
       toneIndex: index,
       frequencyHz: frequencies[index],
@@ -61,37 +73,36 @@ class AudioService {
     );
 
     final key = _cacheKey(seed, index, hardMode);
-    final path = _toneFileCache[key];
-    if (path == null) return;
+    final wavBytes = _wavCache[key];
+    if (wavBytes == null) return;
 
     try {
-      // Load the raw PCM file — just_audio reads WAV; we write a minimal WAV header.
-      await _player.setAudioSource(AudioSource.file(path));
+      final source = await buildAudioSource(key, wavBytes, _fileCache);
+      await _player.setAudioSource(source);
       await _player.play();
-    } catch (e) {
-      // Gracefully handle playback failures (e.g. audio focus stolen)
+    } catch (_) {
+      // Gracefully ignore playback failures (permissions, audio focus, etc.)
     }
   }
 
-  /// Play a preview of a single frequency (for slider preview button).
+  /// Play a short preview of an arbitrary frequency (recreate-phase slider).
   Future<void> playPreviewHz(double frequencyHz) async {
     if (_isDisposed) return;
     await _player.stop();
 
-    final tempPath = await _writeWavFile(
-      pcm: SineWaveSynthesizer.synthesize(
-        frequencyHz: frequencyHz,
-        durationSeconds: 0.5,
-      ),
-      label: 'preview_${frequencyHz.toStringAsFixed(1)}',
-    );
+    final wav = _buildWav(SineWaveSynthesizer.synthesize(
+      frequencyHz: frequencyHz,
+      durationSeconds: 0.5,
+    ));
 
     try {
-      await _player.setAudioSource(AudioSource.file(tempPath));
+      final source = await buildPreviewSource(
+        frequencyHz.toStringAsFixed(1),
+        wav,
+      );
+      await _player.setAudioSource(source);
       await _player.play();
-    } catch (e) {
-      // Ignore
-    }
+    } catch (_) {}
   }
 
   Future<void> stop() async {
@@ -102,23 +113,23 @@ class AudioService {
   Future<void> dispose() async {
     _isDisposed = true;
     await _player.dispose();
-    await _clearCache();
+    clearNativeFiles(_fileCache);
+    _wavCache.clear();
   }
 
   // ── Private helpers ────────────────────────────────────────────────────────
 
-  String _cacheKey(int seed, int index, bool hardMode) {
-    return '${seed}_${index}_$hardMode';
-  }
+  String _cacheKey(int seed, int index, bool hardMode) =>
+      '${seed}_${index}_$hardMode';
 
-  Future<void> _ensureToneFile({
+  Future<void> _ensureWav({
     required int seed,
     required int toneIndex,
     required double frequencyHz,
     required bool hardMode,
   }) async {
     final key = _cacheKey(seed, toneIndex, hardMode);
-    if (_toneFileCache.containsKey(key)) return;
+    if (_wavCache.containsKey(key)) return;
 
     final overtoneHz = hardMode
         ? SineWaveSynthesizer.hardModeOvertoneHz(
@@ -133,74 +144,45 @@ class AudioService {
       overtoneHz: overtoneHz,
     );
 
-    final path = await _writeWavFile(
-      pcm: pcm,
-      label: '${seed}_$toneIndex',
-    );
-    _toneFileCache[key] = path;
+    _wavCache[key] = _buildWav(pcm);
   }
 
-  /// Write a minimal valid WAV file from raw 16-bit PCM samples.
-  /// The WAV header enables just_audio to decode it directly.
-  Future<String> _writeWavFile({
-    required Uint8List pcm,
-    required String label,
-  }) async {
+  /// Builds a minimal valid WAV container around 16-bit PCM samples.
+  Uint8List _buildWav(Uint8List pcm) {
     const int sampleRate = AppConstants.audioSampleRate;
     const int numChannels = 1;
     const int bitsPerSample = 16;
     const int byteRate = sampleRate * numChannels * bitsPerSample ~/ 8;
     const int blockAlign = numChannels * bitsPerSample ~/ 8;
-    final int dataChunkSize = pcm.length;
-    final int fileSize = 36 + dataChunkSize;
+    final int dataSize = pcm.length;
+    final int fileSize = 36 + dataSize;
 
-    final header = ByteData(44);
-    // RIFF chunk
-    header.setUint8(0, 0x52); // 'R'
-    header.setUint8(1, 0x49); // 'I'
-    header.setUint8(2, 0x46); // 'F'
-    header.setUint8(3, 0x46); // 'F'
-    header.setUint32(4, fileSize, Endian.little);
-    header.setUint8(8, 0x57);  // 'W'
-    header.setUint8(9, 0x41);  // 'A'
-    header.setUint8(10, 0x56); // 'V'
-    header.setUint8(11, 0x45); // 'E'
-    // fmt chunk
-    header.setUint8(12, 0x66); // 'f'
-    header.setUint8(13, 0x6D); // 'm'
-    header.setUint8(14, 0x74); // 't'
-    header.setUint8(15, 0x20); // ' '
-    header.setUint32(16, 16, Endian.little); // Subchunk1Size = 16 for PCM
-    header.setUint16(20, 1, Endian.little);  // AudioFormat = 1 (PCM)
-    header.setUint16(22, numChannels, Endian.little);
-    header.setUint32(24, sampleRate, Endian.little);
-    header.setUint32(28, byteRate, Endian.little);
-    header.setUint16(32, blockAlign, Endian.little);
-    header.setUint16(34, bitsPerSample, Endian.little);
-    // data chunk
-    header.setUint8(36, 0x64); // 'd'
-    header.setUint8(37, 0x61); // 'a'
-    header.setUint8(38, 0x74); // 't'
-    header.setUint8(39, 0x61); // 'a'
-    header.setUint32(40, dataChunkSize, Endian.little);
+    final hdr = ByteData(44);
+    // RIFF
+    hdr.setUint8(0, 0x52); hdr.setUint8(1, 0x49);
+    hdr.setUint8(2, 0x46); hdr.setUint8(3, 0x46);
+    hdr.setUint32(4, fileSize, Endian.little);
+    hdr.setUint8(8, 0x57);  hdr.setUint8(9, 0x41);
+    hdr.setUint8(10, 0x56); hdr.setUint8(11, 0x45);
+    // fmt
+    hdr.setUint8(12, 0x66); hdr.setUint8(13, 0x6D);
+    hdr.setUint8(14, 0x74); hdr.setUint8(15, 0x20);
+    hdr.setUint32(16, 16, Endian.little);
+    hdr.setUint16(20, 1, Endian.little);
+    hdr.setUint16(22, numChannels, Endian.little);
+    hdr.setUint32(24, sampleRate, Endian.little);
+    hdr.setUint32(28, byteRate, Endian.little);
+    hdr.setUint16(32, blockAlign, Endian.little);
+    hdr.setUint16(34, bitsPerSample, Endian.little);
+    // data
+    hdr.setUint8(36, 0x64); hdr.setUint8(37, 0x61);
+    hdr.setUint8(38, 0x74); hdr.setUint8(39, 0x61);
+    hdr.setUint32(40, dataSize, Endian.little);
 
-    final wavBytes = Uint8List(44 + pcm.length);
-    wavBytes.setRange(0, 44, header.buffer.asUint8List());
-    wavBytes.setRange(44, 44 + pcm.length, pcm);
-
-    final dir = await getTemporaryDirectory();
-    final file = File('${dir.path}/echoed_tone_$label.wav');
-    await file.writeAsBytes(wavBytes, flush: true);
-    return file.path;
-  }
-
-  Future<void> _clearCache() async {
-    for (final path in _toneFileCache.values) {
-      try {
-        await File(path).delete();
-      } catch (_) {}
-    }
-    _toneFileCache.clear();
+    final wav = Uint8List(44 + pcm.length);
+    wav.setRange(0, 44, hdr.buffer.asUint8List());
+    wav.setRange(44, wav.length, pcm);
+    return wav;
   }
 }
 
