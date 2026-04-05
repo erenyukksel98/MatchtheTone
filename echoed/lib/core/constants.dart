@@ -7,9 +7,9 @@ import 'package:google_fonts/google_fonts.dart';
 class AppConstants {
   AppConstants._();
 
-  static const String supabaseUrl = 'https://YOUR_PROJECT_ID.supabase.co';
-  static const String supabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY';
-  static const String revenueCatApiKey = 'YOUR_REVENUECAT_API_KEY';
+  static const String supabaseUrl = 'https://oxkntfwatwvwylpyevkk.supabase.co';
+  static const String supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im94a250ZndhdHd2d3lscHlldmtrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MzQzNDYsImV4cCI6MjA5MDExMDM0Nn0.EVpDoNdBYgH7HP9xUOanHfl401eyAFD0vJR0I0zck_g';
+  static const String revenueCatApiKey = 'test_fbJjBjApVOAdVcekLSqFBDHmPAW';
   static const String premiumEntitlement = 'premium';
   static const String monthlyProductId = 'echoed_premium_monthly';
   static const String annualProductId = 'echoed_premium_annual';
