@@ -1,5 +1,5 @@
 kind = "web"
-previewPath = "/"
+previewPath = "/echoed-web/"
 title = "Echoed — Tone Matcher"
 version = "1.0.0"
 id = "artifacts/echoed-web"
@@ -11,7 +11,7 @@ version = "1.0.0"
 
 [[services]]
 name = "web"
-paths = [ "/" ]
+paths = [ "/echoed-web/" ]
 localPort = 5000
 
 [services.development]
@@ -28,4 +28,4 @@ to = "/index.html"
 
 [services.env]
 PORT = "5000"
-BASE_PATH = "/"
+BASE_PATH = "/echoed-web/"
