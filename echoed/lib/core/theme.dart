@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 import 'constants.dart';
 
 /// App-wide Material theme — dark mode only.
@@ -11,79 +14,79 @@ class AppTheme {
       brightness: Brightness.dark,
       scaffoldBackgroundColor: AppColors.background,
       colorScheme: const ColorScheme.dark(
-        primary: AppColors.primary,
-        secondary: AppColors.accent,
+        primary: AppColors.cyan,
+        secondary: AppColors.magenta,
         surface: AppColors.surface,
         error: AppColors.scoreBad,
-        onPrimary: AppColors.textPrimary,
+        onPrimary: AppColors.background,
         onSecondary: AppColors.background,
         onSurface: AppColors.textPrimary,
         onError: AppColors.textPrimary,
       ),
-      fontFamily: 'SpaceMono',
 
-      // AppBar
-      appBarTheme: const AppBarTheme(
+      // ── AppBar ───────────────────────────────────────────────────────────
+      appBarTheme: AppBarTheme(
         backgroundColor: AppColors.background,
         elevation: 0,
         scrolledUnderElevation: 0,
-        centerTitle: true,
-        titleTextStyle: AppTextStyles.headingMedium,
-        iconTheme: IconThemeData(color: AppColors.textPrimary),
+        systemOverlayStyle: SystemUiOverlayStyle.light,
+        titleTextStyle: AppTextStyles.headingSmall,
+        iconTheme: const IconThemeData(color: AppColors.textPrimary),
       ),
 
-      // Text
-      textTheme: const TextTheme(
+      // ── Text ─────────────────────────────────────────────────────────────
+      textTheme: TextTheme(
         displayLarge: AppTextStyles.displayLarge,
         headlineLarge: AppTextStyles.headingLarge,
         headlineMedium: AppTextStyles.headingMedium,
         bodyLarge: AppTextStyles.bodyLarge,
         bodyMedium: AppTextStyles.bodyMedium,
         labelLarge: AppTextStyles.labelLarge,
+        labelSmall: AppTextStyles.labelSmall,
       ),
 
-      // Elevated button — primary CTA
+      // ── Elevated button — primary CTA ────────────────────────────────────
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.textPrimary,
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          textStyle: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold),
+          backgroundColor: AppColors.cyan,
+          foregroundColor: AppColors.background,
+          disabledBackgroundColor: AppColors.surfaceHigh,
+          disabledForegroundColor: AppColors.textDisabled,
+          minimumSize: const Size(double.infinity, 56),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           elevation: 0,
+          textStyle: GoogleFonts.inter(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.1,
+          ),
         ),
       ),
 
-      // Outlined button — secondary action
+      // ── Outlined button ──────────────────────────────────────────────────
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.primary,
-          side: const BorderSide(color: AppColors.primary, width: 1.5),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          textStyle: AppTextStyles.bodyLarge,
+          foregroundColor: AppColors.textPrimary,
+          side: const BorderSide(color: AppColors.borderBright),
+          minimumSize: const Size(double.infinity, 52),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          textStyle: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600),
         ),
       ),
 
-      // Text button
+      // ── Text button ──────────────────────────────────────────────────────
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: AppColors.primary,
-          textStyle: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.primary,
-            decoration: TextDecoration.underline,
-          ),
+          foregroundColor: AppColors.cyan,
+          textStyle: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600),
         ),
       ),
 
-      // Input decoration
+      // ── Input ────────────────────────────────────────────────────────────
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.surface,
+        hintStyle: AppTextStyles.bodyMedium,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.border),
@@ -94,87 +97,87 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+          borderSide: const BorderSide(color: AppColors.cyan, width: 1.5),
         ),
-        hintStyle: AppTextStyles.bodyMedium,
-        labelStyle: AppTextStyles.bodyMedium,
       ),
 
-      // Slider (note: custom frequency sliders are painted via CustomPainter)
-      sliderTheme: const SliderThemeData(
-        activeTrackColor: AppColors.primary,
-        inactiveTrackColor: AppColors.border,
-        thumbColor: AppColors.sliderThumb,
-        overlayColor: Color(0x337B6EF6),
+      // ── Slider ───────────────────────────────────────────────────────────
+      sliderTheme: SliderThemeData(
+        activeTrackColor: AppColors.cyan,
+        inactiveTrackColor: AppColors.surfaceTop,
+        thumbColor: AppColors.cyan,
+        overlayColor: AppColors.cyan.withOpacity(0.15),
+        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
         trackHeight: 4,
       ),
 
-      // Divider
+      // ── Divider ──────────────────────────────────────────────────────────
       dividerTheme: const DividerThemeData(
         color: AppColors.border,
         thickness: 1,
         space: 0,
       ),
 
-      // Bottom nav
+      // ── Navigation bar ───────────────────────────────────────────────────
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: AppColors.surface,
-        indicatorColor: AppColors.primaryDim,
-        labelTextStyle: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return AppTextStyles.labelLarge.copyWith(color: AppColors.primaryGlow);
+        indicatorColor: AppColors.cyanDim,
+        height: 64,
+        elevation: 0,
+        labelTextStyle: WidgetStateProperty.resolveWith((s) {
+          if (s.contains(WidgetState.selected)) {
+            return GoogleFonts.inter(
+                fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.cyan);
           }
-          return AppTextStyles.labelLarge;
+          return GoogleFonts.inter(
+              fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.textSecondary);
         }),
-        iconTheme: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return const IconThemeData(color: AppColors.primaryGlow);
+        iconTheme: WidgetStateProperty.resolveWith((s) {
+          if (s.contains(WidgetState.selected)) {
+            return const IconThemeData(color: AppColors.cyan, size: 22);
           }
-          return const IconThemeData(color: AppColors.textSecondary);
+          return const IconThemeData(color: AppColors.textSecondary, size: 22);
         }),
       ),
 
-      // Card
+      // ── Card ─────────────────────────────────────────────────────────────
       cardTheme: CardThemeData(
         color: AppColors.surface,
         elevation: 0,
+        margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
           side: const BorderSide(color: AppColors.border),
         ),
-        margin: EdgeInsets.zero,
       ),
 
-      // Bottom sheet
+      // ── Bottom sheet ─────────────────────────────────────────────────────
       bottomSheetTheme: const BottomSheetThemeData(
-        backgroundColor: AppColors.surface,
+        backgroundColor: AppColors.surfaceHigh,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
       ),
 
-      // Dialog
+      // ── Dialog ───────────────────────────────────────────────────────────
       dialogTheme: DialogThemeData(
-        backgroundColor: AppColors.surfaceVariant,
+        backgroundColor: AppColors.surfaceHigh,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: AppColors.borderBright),
         ),
-        titleTextStyle: AppTextStyles.headingMedium,
+        titleTextStyle: AppTextStyles.headingSmall,
         contentTextStyle: AppTextStyles.bodyMedium,
       ),
 
-      // Switch
+      // ── Switch ───────────────────────────────────────────────────────────
       switchTheme: SwitchThemeData(
-        thumbColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return AppColors.primary;
-          }
+        thumbColor: WidgetStateProperty.resolveWith((s) {
+          if (s.contains(WidgetState.selected)) return AppColors.cyan;
           return AppColors.textDisabled;
         }),
-        trackColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return AppColors.primaryDim;
-          }
+        trackColor: WidgetStateProperty.resolveWith((s) {
+          if (s.contains(WidgetState.selected)) return AppColors.cyanDim;
           return AppColors.border;
         }),
       ),

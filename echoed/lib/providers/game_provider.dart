@@ -312,3 +312,49 @@ final gameNotifierProvider = StateNotifierProvider<GameNotifier, GameModel?>((re
     ref,
   );
 });
+
+// ── Streak provider ────────────────────────────────────────────────────────────
+
+const String _streakCountKey = 'echoed_streak_count';
+const String _streakLastDateKey = 'echoed_streak_last_date';
+
+/// Reads the current consecutive-days streak from SharedPreferences.
+/// A streak increments when the user completes at least one game on a new UTC day.
+/// Call [StreakNotifier.recordGamePlayed] after any game completion.
+class StreakNotifier extends StateNotifier<int> {
+  StreakNotifier() : super(0) {
+    _load();
+  }
+
+  Future<void> _load() async {
+    final prefs = await SharedPreferences.getInstance();
+    final streak = prefs.getInt(_streakCountKey) ?? 0;
+    state = streak;
+  }
+
+  String _todayKey() {
+    final now = DateTime.now().toUtc();
+    return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+  }
+
+  Future<void> recordGamePlayed() async {
+    final prefs = await SharedPreferences.getInstance();
+    final today = _todayKey();
+    final lastDate = prefs.getString(_streakLastDateKey);
+    if (lastDate == today) return; // already recorded today
+
+    final yesterday = () {
+      final d = DateTime.now().toUtc().subtract(const Duration(days: 1));
+      return '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+    }();
+
+    final newStreak = (lastDate == yesterday) ? (state + 1) : 1;
+    await prefs.setInt(_streakCountKey, newStreak);
+    await prefs.setString(_streakLastDateKey, today);
+    state = newStreak;
+  }
+}
+
+final streakProvider = StateNotifierProvider<StreakNotifier, int>(
+  (_) => StreakNotifier(),
+);

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 /// ---------------------------------------------------------------------------
 /// App-wide constants — replace placeholder values with real credentials.
@@ -6,39 +7,27 @@ import 'package:flutter/material.dart';
 class AppConstants {
   AppConstants._();
 
-  // Supabase — replace with values from your Supabase project settings.
   static const String supabaseUrl = 'https://YOUR_PROJECT_ID.supabase.co';
   static const String supabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY';
-
-  // RevenueCat — replace with the API key from the RevenueCat dashboard.
   static const String revenueCatApiKey = 'YOUR_REVENUECAT_API_KEY';
-
-  // RevenueCat entitlement identifier (set in RevenueCat dashboard).
   static const String premiumEntitlement = 'premium';
-
-  // RevenueCat product identifiers (must match App Store / Play Store).
   static const String monthlyProductId = 'echoed_premium_monthly';
   static const String annualProductId = 'echoed_premium_annual';
 
-  // Game configuration
   static const int toneCount = 5;
   static const double minFrequencyHz = 200.0;
   static const double maxFrequencyHz = 1800.0;
   static const int memorizeTimeLimitSeconds = 300;
   static const double toneDurationSeconds = 1.5;
-  static const double toneFadeSeconds = 0.01; // linear fade in/out
+  static const double toneFadeSeconds = 0.01;
   static const double toneAmplitude = 0.7;
   static const int audioSampleRate = 44100;
-  static const double minCentsDistance = 50.0; // min spacing between tones
+  static const double minCentsDistance = 50.0;
 
-  // Free tier limits
   static const int freeGamesPerDay = 3;
   static const int freeMultiplayerSessionsPerDay = 3;
-
-  // Session code length
   static const int sessionCodeLength = 6;
 
-  // Score grades
   static const Map<String, List<double>> scoreGrades = {
     'Perfect': [95, 100],
     'Sharp': [80, 95],
@@ -47,115 +36,153 @@ class AppConstants {
     'Off-key': [0, 40],
   };
 
-  // PostHog analytics (optional — set to empty strings to disable)
   static const String posthogApiKey = '';
   static const String posthogHost = 'https://app.posthog.com';
 }
 
 /// ---------------------------------------------------------------------------
-/// Color palette — original, dark-first design system.
+/// Color palette — neon cyan + magenta on near-black.
 /// ---------------------------------------------------------------------------
 class AppColors {
   AppColors._();
 
-  static const Color background = Color(0xFF0A0A0F);
-  static const Color surface = Color(0xFF13131A);
-  static const Color surfaceVariant = Color(0xFF1E1E2A);
-  static const Color border = Color(0xFF2A2A3A);
+  // Backgrounds
+  static const Color background    = Color(0xFF090909);
+  static const Color surface       = Color(0xFF111111);
+  static const Color surfaceHigh   = Color(0xFF1A1A1A);
+  static const Color surfaceTop    = Color(0xFF222222);
+  static const Color border        = Color(0xFF252525);
+  static const Color borderBright  = Color(0xFF363636);
 
-  // Primary accent — electric indigo
-  static const Color primary = Color(0xFF7B6EF6);
-  static const Color primaryDim = Color(0xFF3D3580);
-  static const Color primaryGlow = Color(0xFFB0A8FF);
+  // Primary — neon cyan
+  static const Color cyan       = Color(0xFF00F5FF);
+  static const Color cyanDim    = Color(0xFF003D40);
+  static const Color cyanMid    = Color(0xFF007A80);
 
-  // Secondary accent — neon teal (waveform highlight)
-  static const Color accent = Color(0xFF00E5CC);
-  static const Color accentDim = Color(0xFF00726A);
+  // Secondary — neon magenta
+  static const Color magenta    = Color(0xFFFF00FF);
+  static const Color magentaDim = Color(0xFF3D003D);
+  static const Color magentaMid = Color(0xFF7A007A);
 
-  // Tone score colors
-  static const Color scorePerfect = Color(0xFF7BF696);
-  static const Color scoreGood = Color(0xFFB0F67B);
-  static const Color scoreMid = Color(0xFFF6D46A);
-  static const Color scorePoor = Color(0xFFF6926A);
-  static const Color scoreBad = Color(0xFFF66A6A);
+  // Legacy aliases kept for widgets that reference them
+  static const Color primary       = cyan;
+  static const Color primaryDim    = cyanDim;
+  static const Color primaryGlow   = Color(0xFF80FAFF);
+  static const Color accent        = magenta;
+  static const Color accentDim     = magentaDim;
 
-  static const Color textPrimary = Color(0xFFF0F0FF);
-  static const Color textSecondary = Color(0xFF8888AA);
-  static const Color textDisabled = Color(0xFF444455);
+  // Tone score colours
+  static const Color scorePerfect = Color(0xFF00F5FF);
+  static const Color scoreGood    = Color(0xFF7BF696);
+  static const Color scoreMid     = Color(0xFFF6D46A);
+  static const Color scorePoor    = Color(0xFFF6926A);
+  static const Color scoreBad     = Color(0xFFFF4455);
 
-  // Slider track gradient stops
-  static const Color sliderBottom = Color(0xFF3D3580);
-  static const Color sliderTop = Color(0xFF7B6EF6);
-  static const Color sliderThumb = Color(0xFFFFFFFF);
+  // Backward-compatible alias
+  static const Color surfaceVariant = surfaceHigh;
+
+  // Text
+  static const Color textPrimary   = Color(0xFFFFFFFF);
+  static const Color textSecondary = Color(0xFF888888);
+  static const Color textDisabled  = Color(0xFF3A3A3A);
+
+  // Slider
+  static const Color sliderBottom = cyanDim;
+  static const Color sliderTop    = cyan;
+  static const Color sliderThumb  = Color(0xFFFFFFFF);
+
+  // Per-tone identity colours (cyan → magenta spectrum)
+  static const List<Color> toneColors = [
+    Color(0xFF00F5FF), // 1 – cyan
+    Color(0xFF00CFFF), // 2 – sky
+    Color(0xFFAA66FF), // 3 – violet
+    Color(0xFFFF44CC), // 4 – pink
+    Color(0xFFFF00FF), // 5 – magenta
+  ];
 }
 
 /// ---------------------------------------------------------------------------
-/// Typography — SpaceMono gives a precise, technical feel.
+/// Typography — Inter (Google Fonts) for clean, modern feel.
 /// ---------------------------------------------------------------------------
 class AppTextStyles {
   AppTextStyles._();
 
-  static const String _mono = 'SpaceMono';
-
-  static const TextStyle displayLarge = TextStyle(
-    fontFamily: _mono,
+  static TextStyle get displayLarge => GoogleFonts.inter(
     fontSize: 64,
-    fontWeight: FontWeight.bold,
+    fontWeight: FontWeight.w800,
     color: AppColors.textPrimary,
     letterSpacing: -2,
+    height: 1.0,
   );
 
-  static const TextStyle headingLarge = TextStyle(
-    fontFamily: _mono,
+  static TextStyle get headingLarge => GoogleFonts.inter(
     fontSize: 28,
-    fontWeight: FontWeight.bold,
+    fontWeight: FontWeight.w700,
     color: AppColors.textPrimary,
     letterSpacing: -0.5,
   );
 
-  static const TextStyle headingMedium = TextStyle(
-    fontFamily: _mono,
+  static TextStyle get headingMedium => GoogleFonts.inter(
     fontSize: 20,
-    fontWeight: FontWeight.bold,
+    fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
   );
 
-  static const TextStyle bodyLarge = TextStyle(
-    fontFamily: _mono,
+  static TextStyle get headingSmall => GoogleFonts.inter(
     fontSize: 16,
+    fontWeight: FontWeight.w600,
+    color: AppColors.textPrimary,
+  );
+
+  static TextStyle get bodyLarge => GoogleFonts.inter(
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
     color: AppColors.textPrimary,
     height: 1.5,
   );
 
-  static const TextStyle bodyMedium = TextStyle(
-    fontFamily: _mono,
+  static TextStyle get bodyMedium => GoogleFonts.inter(
     fontSize: 14,
+    fontWeight: FontWeight.w400,
     color: AppColors.textSecondary,
     height: 1.5,
   );
 
-  static const TextStyle labelLarge = TextStyle(
-    fontFamily: _mono,
-    fontSize: 12,
-    fontWeight: FontWeight.bold,
+  static TextStyle get labelLarge => GoogleFonts.inter(
+    fontSize: 11,
+    fontWeight: FontWeight.w600,
     color: AppColors.textSecondary,
-    letterSpacing: 1.5,
+    letterSpacing: 1.8,
   );
 
-  static const TextStyle freqReadout = TextStyle(
-    fontFamily: _mono,
+  static TextStyle get labelSmall => GoogleFonts.inter(
+    fontSize: 10,
+    fontWeight: FontWeight.w500,
+    color: AppColors.textDisabled,
+    letterSpacing: 1.4,
+  );
+
+  // Monospace for Hz / numeric readouts
+  static TextStyle get freqReadout => GoogleFonts.spaceGrotesk(
     fontSize: 18,
-    fontWeight: FontWeight.bold,
-    color: AppColors.primary,
-    letterSpacing: 1,
+    fontWeight: FontWeight.w700,
+    color: AppColors.cyan,
+    letterSpacing: 0.5,
   );
 
-  static const TextStyle scoreDisplay = TextStyle(
-    fontFamily: _mono,
-    fontSize: 72,
-    fontWeight: FontWeight.bold,
+  static TextStyle get scoreDisplay => GoogleFonts.inter(
+    fontSize: 80,
+    fontWeight: FontWeight.w900,
     color: AppColors.textPrimary,
-    letterSpacing: -3,
+    letterSpacing: -4,
+    height: 1.0,
+  );
+
+  static TextStyle get timerDisplay => GoogleFonts.spaceGrotesk(
+    fontSize: 22,
+    fontWeight: FontWeight.w700,
+    color: AppColors.textPrimary,
+    letterSpacing: 1,
   );
 }
 
@@ -164,10 +191,47 @@ class AppTextStyles {
 /// ---------------------------------------------------------------------------
 class AppSpacing {
   AppSpacing._();
-  static const double xs = 4;
-  static const double sm = 8;
-  static const double md = 16;
-  static const double lg = 24;
-  static const double xl = 32;
+  static const double xs  = 4;
+  static const double sm  = 8;
+  static const double md  = 16;
+  static const double lg  = 24;
+  static const double xl  = 32;
   static const double xxl = 48;
+}
+
+/// ---------------------------------------------------------------------------
+/// Shared decorations & shadow helpers
+/// ---------------------------------------------------------------------------
+class AppDecorations {
+  AppDecorations._();
+
+  /// Glowing border card
+  static BoxDecoration glowCard({
+    Color glowColor = AppColors.cyan,
+    double glowIntensity = 0.25,
+    double radius = 20,
+  }) =>
+      BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(radius),
+        border: Border.all(color: glowColor.withOpacity(0.35), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: glowColor.withOpacity(glowIntensity),
+            blurRadius: 24,
+            spreadRadius: -4,
+          ),
+        ],
+      );
+
+  static BoxDecoration plainCard({double radius = 16}) => BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(radius),
+        border: Border.all(color: AppColors.border, width: 1),
+      );
+
+  static List<BoxShadow> neonShadow(Color color, {double opacity = 0.5}) => [
+        BoxShadow(color: color.withOpacity(opacity), blurRadius: 20, spreadRadius: -6),
+        BoxShadow(color: color.withOpacity(opacity * 0.3), blurRadius: 50, spreadRadius: -10),
+      ];
 }
