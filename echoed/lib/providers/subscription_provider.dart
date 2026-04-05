@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import '../services/revenuecat_service.dart';
+import 'auth_provider.dart';
 
 // ── Offerings ─────────────────────────────────────────────────────────────────
 

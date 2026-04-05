@@ -32,8 +32,8 @@ class RevenueCatService {
   /// Purchase a package. Returns true on success.
   Future<bool> purchasePackage(Package package) async {
     try {
-      final info = await Purchases.purchasePackage(package);
-      return info.entitlements.active.containsKey(AppConstants.premiumEntitlement);
+      final result = await Purchases.purchasePackage(package);
+      return result.customerInfo.entitlements.active.containsKey(AppConstants.premiumEntitlement);
     } on PurchasesErrorCode catch (e) {
       if (e == PurchasesErrorCode.purchaseCancelledError) {
         // User cancelled — not an error

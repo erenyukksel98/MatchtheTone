@@ -15,7 +15,7 @@ paths = [ "/" ]
 localPort = 5000
 
 [services.development]
-run = "pnpm --filter @workspace/echoed-web run dev"
+run = "cd /home/runner/workspace/echoed && flutter run -d web-server --web-port=5000 --web-hostname=0.0.0.0"
 
 [services.production]
 build = [ "pnpm", "--filter", "@workspace/echoed-web", "run", "build" ]

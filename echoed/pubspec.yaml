@@ -26,7 +26,7 @@ dependencies:
   audio_session: ^0.1.21
 
   # Payments
-  purchases_flutter: ^7.4.0
+  purchases_flutter: ^9.16.0
 
   # Storage
   path_provider: ^2.1.4
