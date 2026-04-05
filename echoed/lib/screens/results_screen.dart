@@ -94,14 +94,14 @@ class ResultsScreen extends ConsumerWidget {
   List<ToneModel> _computeLocalTones() {
     return List.generate(targetFrequencies.length, (i) {
       final target = targetFrequencies[i];
-      final guess = guessedFrequencies[i];
-      final cents = ScoringService.deviationCents(guess, target);
-      final points = ScoringService.scoreTone(guess, target);
+      final guess  = guessedFrequencies[i];
+      final cents  = ScoringService.deviationCents(guess, target);
+      final points = ScoringService.scoreToneHz(guess, target);
       return ToneModel(
         index: i,
-        targetHz: target,
-        guessHz: guess,
-        scoreCents: cents,
+        targetHz:    target,
+        guessHz:     guess,
+        scoreCents:  cents,
         scorePoints: points,
       );
     });
@@ -202,6 +202,21 @@ class _ScoreHero extends StatelessWidget {
             ),
           ),
         ).animate().fadeIn(delay: 400.ms).scale(begin: const Offset(0.85, 0.85)),
+
+        const SizedBox(height: AppSpacing.md),
+
+        // Funny personality message
+        Center(
+          child: Text(
+            ScoringService.funnyMessage(totalScore),
+            style: AppTextStyles.bodyMedium.copyWith(
+              fontSize: 14,
+              color: AppColors.textSecondary,
+              height: 1.4,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ).animate().fadeIn(delay: 700.ms).slideY(begin: 0.1),
       ],
     );
   }
@@ -225,10 +240,12 @@ class _ToneResultCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final points = tone.scorePoints ?? 0;
-    final cents = tone.scoreCents ?? 0;
-    final guess = tone.guessHz ?? 0;
+    final guess  = tone.guessHz ?? 0;
     final target = tone.targetHz;
-    final color = Color(ScoringService.scoreColor(points));
+    final diffHz = (guess - target).abs();
+    final cents  = tone.scoreCents ?? 0;
+    final color  = Color(ScoringService.scoreColor(points));
+    final isPerfect = diffHz <= 5.0;
 
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -236,7 +253,9 @@ class _ToneResultCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(
+          color: isPerfect ? color.withOpacity(0.4) : AppColors.border,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -244,6 +263,7 @@ class _ToneResultCard extends StatelessWidget {
           // Header row
           Row(
             children: [
+              // Tone number badge
               Container(
                 width: 28,
                 height: 28,
@@ -263,40 +283,62 @@ class _ToneResultCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
+              // Frequency details
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Target vs guess row
                     Row(
                       children: [
                         Text(
-                          '${target.toStringAsFixed(1)} Hz',
+                          '${target.toStringAsFixed(0)} Hz',
                           style: AppTextStyles.bodyMedium.copyWith(
                             color: AppColors.accent,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        Text('target', style: AppTextStyles.bodyMedium.copyWith(fontSize: 11)),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 6),
                         Text(
-                          '${guess.toStringAsFixed(1)} Hz',
+                          'target',
+                          style: AppTextStyles.bodyMedium.copyWith(fontSize: 11),
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          '${guess.toStringAsFixed(0)} Hz',
                           style: AppTextStyles.bodyMedium.copyWith(
                             color: AppColors.primary,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        Text('guess', style: AppTextStyles.bodyMedium.copyWith(fontSize: 11)),
+                        const SizedBox(width: 6),
+                        Text(
+                          'your guess',
+                          style: AppTextStyles.bodyMedium.copyWith(fontSize: 11),
+                        ),
                       ],
                     ),
-                    Text(
-                      '${cents.toStringAsFixed(0)} cents off',
-                      style: AppTextStyles.bodyMedium.copyWith(fontSize: 11),
+                    const SizedBox(height: 3),
+                    // Diff line
+                    Row(
+                      children: [
+                        Text(
+                          isPerfect
+                              ? 'Perfect — within 5 Hz ✓'
+                              : '${diffHz.toStringAsFixed(1)} Hz off  (${cents.toStringAsFixed(0)} cents)',
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            fontSize: 11,
+                            color: isPerfect
+                                ? AppColors.scoreGood
+                                : AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
+              // Points earned
               Text(
                 '+${points.toStringAsFixed(1)}',
                 style: AppTextStyles.headingMedium.copyWith(color: color),

@@ -221,6 +221,7 @@ class _GameMemorizeScreenState extends ConsumerState<GameMemorizeScreen>
                             hasPlayed: _playedIndices.contains(i),
                             isDisabled: _activeIndex != null && _activeIndex != i,
                             pulseCtrl: _pulseCtrl,
+                            showHz: !isHard,
                             onTap: (_activeIndex != null && _activeIndex != i)
                                 ? null
                                 : () => _playTone(i),
@@ -593,6 +594,7 @@ class _ToneCard extends StatefulWidget {
     required this.isDisabled,
     required this.pulseCtrl,
     required this.onTap,
+    this.showHz = true,
   });
 
   final int index;
@@ -602,6 +604,7 @@ class _ToneCard extends StatefulWidget {
   final bool isDisabled;
   final AnimationController pulseCtrl;
   final VoidCallback? onTap;
+  final bool showHz;
 
   @override
   State<_ToneCard> createState() => _ToneCardState();
@@ -724,13 +727,34 @@ class _ToneCardState extends State<_ToneCard>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Tone ${widget.index + 1}',
-                          style: AppTextStyles.headingSmall.copyWith(
-                            color: widget.isDisabled && !widget.isActive
-                                ? AppColors.textDisabled
-                                : AppColors.textPrimary,
-                          ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.baseline,
+                          textBaseline: TextBaseline.alphabetic,
+                          children: [
+                            Text(
+                              'Tone ${widget.index + 1}',
+                              style: AppTextStyles.headingSmall.copyWith(
+                                color: widget.isDisabled && !widget.isActive
+                                    ? AppColors.textDisabled
+                                    : AppColors.textPrimary,
+                              ),
+                            ),
+                            if (widget.showHz) ...[
+                              const SizedBox(width: 8),
+                              Text(
+                                '${widget.hz.toStringAsFixed(0)} Hz',
+                                style: GoogleFonts.spaceGrotesk(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: color.withOpacity(
+                                    widget.isDisabled && !widget.isActive
+                                        ? 0.3
+                                        : 0.85,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                         const SizedBox(height: 2),
                         Text(
