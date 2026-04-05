@@ -6,3 +6,9 @@ id = "tQlkOQYqudVLJV6E0cRzD"
 uri = "file://Echoed_PRD.md"
 type = "text"
 title = "Echoed — Product Requirements Document"
+
+[[outputs]]
+id = "9Mob-pZYa85VVVKhctkY8"
+uri = "file://echoed/README.md"
+type = "text"
+title = "Echoed — Flutter Project README"

@@ -1,0 +1,31 @@
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    - always_declare_return_types
+    - avoid_empty_else
+    - avoid_print
+    - avoid_redundant_argument_values
+    - avoid_relative_lib_imports
+    - avoid_return_types_on_setters
+    - avoid_unnecessary_containers
+    - avoid_void_async
+    - cancel_subscriptions
+    - close_sinks
+    - directives_ordering
+    - prefer_const_constructors
+    - prefer_const_constructors_in_immutables
+    - prefer_final_fields
+    - prefer_final_locals
+    - sized_box_for_whitespace
+    - sort_child_properties_last
+    - use_full_hex_values_for_flutter_colors
+    - use_key_in_widget_constructors
+
+analyzer:
+  errors:
+    missing_return: error
+    dead_code: warning
+  exclude:
+    - lib/**.g.dart
+    - lib/**.freezed.dart
