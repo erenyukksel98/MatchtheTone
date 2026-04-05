@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -32,11 +34,9 @@ class _GameRecreateScreenState extends ConsumerState<GameRecreateScreen> {
   late final List<double> _guesses;
   bool _isSubmitting = false;
 
-  // Log midpoint of [200, 1800] Hz
+  // Geometric midpoint of [200, 1800] Hz — exp of the log midpoint ≈ 600 Hz
   static double get _initialHz {
-    final logMin = 5.298317; // ln(200)
-    final logMax = 7.495542; // ln(1800)
-    return (logMin + (logMax - logMin) / 2).toDouble();
+    return math.exp((math.log(AppConstants.minFrequencyHz) + math.log(AppConstants.maxFrequencyHz)) / 2);
   }
 
   @override

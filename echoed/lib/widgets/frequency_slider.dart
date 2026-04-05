@@ -152,6 +152,24 @@ class _FrequencySliderState extends State<FrequencySlider>
 
               const SizedBox(height: 4),
 
+              // Live waveform preview — updates with every slider move + glow animation
+              AnimatedBuilder(
+                animation: _glowAnim,
+                builder: (_, __) => SizedBox(
+                  width: 56,
+                  height: 28,
+                  child: CustomPaint(
+                    painter: _WaveformMiniPainter(
+                      hz: _currentHz,
+                      toneIndex: widget.index,
+                      glowIntensity: _glowAnim.value,
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 2),
+
               // Preview speaker button
               GestureDetector(
                 onTap: () {
@@ -286,4 +304,97 @@ class _SliderTrackPainter extends CustomPainter {
   @override
   bool shouldRepaint(_SliderTrackPainter old) =>
       old.position != position || old.glowIntensity != glowIntensity;
+}
+
+/// ---------------------------------------------------------------------------
+/// _WaveformMiniPainter — a compact live sine-wave strip.
+///
+/// Renders inside the 56×28 waveform preview box above each slider's speaker
+/// button. The visual cycle count scales with [hz] so higher frequencies show
+/// more compressed waves — giving instant perceptual feedback as the slider
+/// moves.
+/// ---------------------------------------------------------------------------
+class _WaveformMiniPainter extends CustomPainter {
+  _WaveformMiniPainter({
+    required this.hz,
+    required this.toneIndex,
+    this.glowIntensity = 0.0,
+  });
+
+  final double hz;
+  final int toneIndex;
+  final double glowIntensity;
+
+  static const List<Color> _toneColors = [
+    Color(0xFF00F5FF),
+    Color(0xFF00CFFF),
+    Color(0xFFAA66FF),
+    Color(0xFFFF44CC),
+    Color(0xFFFF00FF),
+  ];
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final color = _toneColors[toneIndex % _toneColors.length];
+
+    // Normalize Hz → visual cycle count: 1.5 cycles at 200 Hz, 5 at 1800 Hz
+    final logMin = math.log(AppConstants.minFrequencyHz);
+    final logMax = math.log(AppConstants.maxFrequencyHz);
+    final normalized = ((math.log(hz) - logMin) / (logMax - logMin)).clamp(0.0, 1.0);
+    final cycles = 1.5 + normalized * 3.5;
+
+    const steps = 80;
+    final amplitude = size.height * 0.38 * (1.0 + 0.1 * glowIntensity);
+    final centerY = size.height / 2;
+    final baseOpacity = 0.55 + 0.35 * glowIntensity;
+
+    // Glow pass (blurred, thicker)
+    if (glowIntensity > 0) {
+      final glowPath = Path();
+      for (int i = 0; i <= steps; i++) {
+        final t = i / steps;
+        final x = size.width * t;
+        final y = centerY + amplitude * math.sin(2 * math.pi * cycles * t) * _env(t);
+        if (i == 0) glowPath.moveTo(x, y); else glowPath.lineTo(x, y);
+      }
+      canvas.drawPath(
+        glowPath,
+        Paint()
+          ..color = color.withOpacity(0.25 * glowIntensity)
+          ..strokeWidth = 5
+          ..strokeCap = StrokeCap.round
+          ..style = PaintingStyle.stroke
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
+      );
+    }
+
+    // Main wave
+    final path = Path();
+    for (int i = 0; i <= steps; i++) {
+      final t = i / steps;
+      final x = size.width * t;
+      final y = centerY + amplitude * math.sin(2 * math.pi * cycles * t) * _env(t);
+      if (i == 0) path.moveTo(x, y); else path.lineTo(x, y);
+    }
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = color.withOpacity(baseOpacity)
+        ..strokeWidth = 1.5
+        ..strokeCap = StrokeCap.round
+        ..style = PaintingStyle.stroke,
+    );
+  }
+
+  /// Soft fade-in / fade-out envelope so edges don't clip sharply.
+  double _env(double t) {
+    const fw = 0.08;
+    if (t < fw) return t / fw;
+    if (t > 1 - fw) return (1 - t) / fw;
+    return 1.0;
+  }
+
+  @override
+  bool shouldRepaint(_WaveformMiniPainter old) =>
+      old.hz != hz || old.glowIntensity != glowIntensity;
 }

@@ -1,0 +1,33 @@
+We are building the Flutter app "Echoed" (ear training tone memory game). We already have the full PRD, project scaffold, Riverpod/GoRouter setup, and all UI screens implemented (Home, Memorize phase, Recreate phase, Results, Leaderboard) with the dark neon cyan/magenta minimalist design.
+
+Now implement the complete procedural sound engine. Everything must be 100% original and generated mathematically at runtime — no external audio files, no copyrighted samples.
+
+Requirements:
+- Use dart:math Random with a deterministic seed (game ID or UTC date string) so every player in the same game (solo or multiplayer) gets the EXACT same 5 tones.
+- Tones: pure sine waves, 1.5 seconds each, frequencies randomly chosen between 200–1800 Hz (logarithmic distribution).
+- Free tier: frequency only.
+- Hard mode: add very small random timbre variation (still precisely scorable).
+- Services to create:
+  1. SoundService (singleton with Riverpod provider)
+     - generateDailyTones() → returns list of 5 ToneModel (frequency + optional timbre)
+     - playTone(ToneModel, {bool isMemorize = true})
+     - stopAll()
+  2. Use just_audio or flutter_sound (add to pubspec.yaml if needed, prefer just_audio for simplicity).
+  3. In Memorize screen: 5 cards, each with "Replay" button that plays its tone instantly.
+  4. 300-second countdown timer already exists — during this phase allow unlimited replays.
+  5. In Recreate screen: 5 vertical logarithmic sliders (200–1800 Hz range, nice labels like 200 Hz, 500 Hz, 1k Hz, etc.).
+     - Live waveform preview using CustomPaint (simple sine wave visual that updates as slider moves).
+     - Haptic feedback on slider change.
+  6. Scoring algorithm (in Results screen):
+     - For each tone: calculate % match based on Hz difference (100% = perfect, 0% = >50 Hz off).
+     - Total score out of 100.
+     - Show side-by-side waveform comparison (original vs player’s recreation).
+- Add ToneModel class if not already present.
+- Make sure tone generation is server-ready later (we’ll move the seed logic to Supabase in the next step).
+
+Provide the full code for:
+- New files: lib/services/sound_service.dart, lib/models/tone_model.dart
+- Updated files: Memorize screen, Recreate screen, Results screen (integrate the sound + scoring)
+- Any necessary pubspec.yaml changes and import fixes.
+
+After implementing, test the full flow: Play → Memorize → Recreate → See score. Tell me any issues or suggest the next feature (multiplayer codes or daily tones backend).
