@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'core/theme.dart';
-import 'providers/auth_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/game_memorize_screen.dart';
 import 'screens/game_recreate_screen.dart';
@@ -32,8 +31,6 @@ class EchoedApp extends ConsumerWidget {
 
 /// GoRouter instance — exposed as a Riverpod provider so it can read auth state.
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authStateProvider);
-
   return GoRouter(
     initialLocation: '/',
     redirect: (context, state) {

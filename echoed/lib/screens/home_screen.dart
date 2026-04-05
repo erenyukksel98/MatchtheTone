@@ -230,26 +230,32 @@ class _StreakSection extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
-          _StatPill(
-            icon: Icons.local_fire_department_rounded,
-            iconColor: const Color(0xFFFF7700),
-            value: '$streak',
-            label: 'day streak',
-          ).animate().fadeIn(delay: 100.ms).slideX(begin: -0.1),
+          Expanded(
+            child: _StatPill(
+              icon: Icons.local_fire_department_rounded,
+              iconColor: const Color(0xFFFF7700),
+              value: '$streak',
+              label: 'day streak',
+            ).animate().fadeIn(delay: 100.ms).slideX(begin: -0.1),
+          ),
           const SizedBox(width: 10),
-          _StatPill(
-            icon: Icons.emoji_events_rounded,
-            iconColor: AppColors.cyan,
-            value: '—',
-            label: 'best score',
-          ).animate().fadeIn(delay: 150.ms).slideX(begin: -0.05),
+          Expanded(
+            child: _StatPill(
+              icon: Icons.emoji_events_rounded,
+              iconColor: AppColors.cyan,
+              value: '—',
+              label: 'best score',
+            ).animate().fadeIn(delay: 150.ms).slideX(begin: -0.05),
+          ),
           const SizedBox(width: 10),
-          _StatPill(
-            icon: Icons.bolt_rounded,
-            iconColor: AppColors.magenta,
-            value: '—',
-            label: 'games played',
-          ).animate().fadeIn(delay: 200.ms).slideX(begin: -0.05),
+          Expanded(
+            child: _StatPill(
+              icon: Icons.bolt_rounded,
+              iconColor: AppColors.magenta,
+              value: '—',
+              label: 'games played',
+            ).animate().fadeIn(delay: 200.ms).slideX(begin: -0.05),
+          ),
         ],
       ),
     );
@@ -270,25 +276,23 @@ class _StatPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.border),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, color: iconColor, size: 16),
-            const SizedBox(height: 6),
-            Text(value,
-                style: AppTextStyles.headingSmall
-                    .copyWith(color: AppColors.textPrimary)),
-            Text(label, style: AppTextStyles.labelSmall),
-          ],
-        ),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: iconColor, size: 16),
+          const SizedBox(height: 6),
+          Text(value,
+              style: AppTextStyles.headingSmall
+                  .copyWith(color: AppColors.textPrimary)),
+          Text(label, style: AppTextStyles.labelSmall),
+        ],
       ),
     );
   }
