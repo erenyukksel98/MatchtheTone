@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Echoed Flutter App"
+version = "1.0.0"
+id = "artifacts/flutter-preview"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22543
+
+[services.development]
+run = "pnpm --filter @workspace/flutter-preview run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/flutter-preview", "run", "build" ]
+publicDir = "artifacts/flutter-preview/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22543"
+BASE_PATH = "/"
