@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "tQlkOQYqudVLJV6E0cRzD"
+uri = "file://Echoed_PRD.md"
+type = "text"
+title = "Echoed — Product Requirements Document"
